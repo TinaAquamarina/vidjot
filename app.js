@@ -19,6 +19,7 @@ app.engine('handlebars', exphbs({
 }));
 app.set('view engine', 'handlebars');
 
+// ROUTES
 // Index route
 app.get('/', (req, res) => {
   console.log(req.name);
@@ -29,6 +30,11 @@ app.get('/', (req, res) => {
 app.get('/about', (req, res) => {
   res.render('about')
 });
+
+// Add idea form
+app.get('/ideas/add', (req, res) => {
+  res.render('ideas/add')
+})
 
 const port = 5000;
 
