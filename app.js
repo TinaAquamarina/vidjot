@@ -2,6 +2,7 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
 
 const app = express();
 
@@ -21,8 +22,11 @@ app.engine('handlebars', exphbs({
 app.set('view engine', 'handlebars');
 
 // Add body parser
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Metod override
+app.use(methodOverride('_method'));
 
 // ROUTES
 // Index route
@@ -36,9 +40,32 @@ app.get('/about', (req, res) => {
   res.render('about')
 });
 
+// List all ideas
+app.get('/ideas', (req, res) => {
+  Idea.find({})
+  .sort({date: 'desc'})
+  .then(ideas => {
+    res.render('ideas/list', {
+      ideas:ideas
+    });
+  });
+});
+
 // Add idea form
 app.get('/ideas/add', (req, res) => {
-  res.render('ideas/add')
+  res.render('ideas/add');
+});
+
+// Edit idea
+app.get('/ideas/edit/:id', (req, res) => {
+  Idea.findOne({
+    _id: req.params.id
+  })
+  .then(idea => {
+    res.render('ideas/edit', {
+      idea: idea
+    });
+  });
 });
 
 // POST process form
@@ -66,8 +93,35 @@ app.post('/ideas', (req, res) => {
     .save()
     .then(idea => {
       res.redirect('/ideas');
-    })
+    });
   }
+});
+
+// Edit form process
+app.put('/ideas/:id', (req, res) => {
+  Idea.findOne({
+    _id: req.params.id
+  })
+  .then(idea => {
+    //new values
+    idea.title = req.body.title,
+    idea.details = req.body.details
+
+    idea.save()
+    .then(idea => {
+      res.redirect('/ideas');
+    });
+  });
+});
+
+// Delete idea
+
+app.delete('/ideas/:id', (req, res) => {
+  Idea.deleteOne({
+    _id: req.params.id
+  }).then(() => {
+    res.redirect('/ideas');
+  });
 });
 
 const port = 5000;
